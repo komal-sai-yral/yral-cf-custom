@@ -6,18 +6,36 @@ on:
       - main
     paths:
       - "workers/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
 
 jobs:
-  deploy-sample-worker:
-    name: Deploy sample-worker
+  detect-changes:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: workers/sample-worker
+    outputs:
+      sample-worker: ${{ steps.changes.outputs.sample-worker }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            sample-worker:
+              - "workers/sample-worker/**"
+              - "Cargo.toml"
+              - "Cargo.lock"
+
+  deploy:
+    needs: detect-changes
+    strategy:
+      matrix:
+        worker: [sample-worker]
+    runs-on: ubuntu-latest
+    if: ${{ needs.detect-changes.outputs[matrix.worker] == 'true' }}
     steps:
       - uses: actions/checkout@v4
       - name: Deploy Worker
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
-          workingDirectory: "workers/sample-worker"
+          workingDirectory: workers/${{ matrix.worker }}
