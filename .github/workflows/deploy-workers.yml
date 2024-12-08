@@ -10,17 +10,19 @@ on:
       - "Cargo.lock"
 
 jobs:
-  deploy-sample-worker:
-    name: Deploy sample-worker
+  deploy-workers:
+    name: Deploy ${{ matrix.worker }}
     runs-on: ubuntu-latest
-    if: contains(github.event.head_commit.modified, 'workers/sample-worker/') || contains(github.event.head_commit.added, 'workers/sample-worker/')
+    strategy:
+      matrix:
+        worker: [sample-worker] # add more workers here
     defaults:
       run:
-        working-directory: workers/sample-worker
+        working-directory: workers/${{ matrix.worker }}
     steps:
       - uses: actions/checkout@v4
       - name: Deploy Worker
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
-          workingDirectory: "workers/sample-worker"
+          workingDirectory: "workers/${{ matrix.worker }}"

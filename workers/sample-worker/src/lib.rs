@@ -18,7 +18,7 @@ async fn fetch(req: Request, env: Env, _ctx: Context) -> Result<Response> {
     }
 
     router
-        .get("/", |_, _| Response::ok("Hello from Workers!"))
+        .get("/", |_, _| Response::ok("Hello from Workers 22!"))
         .post_async("/:country", |mut req, ctx| async move {
             let country = ctx.param("country").unwrap();
             let city = match req.json::<Country>().await {
